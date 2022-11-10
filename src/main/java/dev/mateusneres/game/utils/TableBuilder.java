@@ -1,5 +1,6 @@
 package dev.mateusneres.game.utils;
 
+import javax.swing.*;
 import java.util.Arrays;
 import java.util.Objects;
 
@@ -54,6 +55,8 @@ public class TableBuilder {
     private boolean codeblock = false;
     private boolean frame = false;
     private boolean autoAdjust = true;
+
+    private boolean autoColor = false;
 
     /**
      * Builds a String table according to the settings made.
@@ -264,7 +267,11 @@ public class TableBuilder {
             builder.append(borders.verticalOutline);
 
         for (int i = 0; i < row.length; i++) {
-            builder.append(row[i]);
+            if(autoColor) {
+                builder.append(setColor(row[i]));
+            }else {
+                builder.append(row[i]);
+            }
             if (i == 0)
                 builder.append(borders.firstColumnDelimiter);
             else if (i < row.length - 1)
@@ -310,6 +317,42 @@ public class TableBuilder {
         for (int i = 0; i < padding; i++) // padding right
             newValueBuilder.append(" ");
     }
+
+    private String setColor(String text) {
+        int number;
+        try {
+            number = Integer.parseInt(text.replace(" ", ""));
+        } catch (NumberFormatException e) {
+            return text;
+        }
+
+        text = ConsoleColors.WHITE_BOLD_BRIGHT + text;
+        switch (number) {
+            case 2048:
+                return ConsoleColors.PURPLE_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            case 1024:
+                return ConsoleColors.PURPLE_BACKGROUND + text + ConsoleColors.RESET;
+            case 512:
+                return ConsoleColors.GREEN_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            case 256:
+                return ConsoleColors.GREEN_BACKGROUND + text + ConsoleColors.RESET;
+            case 128:
+                return ConsoleColors.BLUE_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            case 64:
+                return ConsoleColors.RED_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            case 32:
+                return ConsoleColors.RED_BACKGROUND + text + ConsoleColors.RESET;
+            case 16:
+                return ConsoleColors.CYAN_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            case 8:
+                return ConsoleColors.CYAN_BACKGROUND + text + ConsoleColors.RESET;
+            case 4:
+                return ConsoleColors.YELLOW_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+            default:
+                return ConsoleColors.YELLOW_BACKGROUND + text + ConsoleColors.RESET;
+        }
+    }
+
 
     /**
      * Sets the headers for the columns specified in {@link this#setValues(String[][]) values}, applied in the order given here.
@@ -425,6 +468,11 @@ public class TableBuilder {
         return this;
     }
 
+    public void setAutoColor(boolean autoColor) {
+        this.autoColor = autoColor;
+    }
+
+
     /**
      * Sets whether the table should be adjusted automatically according to the lengths of the values.
      * By default, this is {@code true}.
@@ -437,6 +485,22 @@ public class TableBuilder {
     public TableBuilder autoAdjust(boolean autoAdjust) {
         this.autoAdjust = autoAdjust;
         return this;
+    }
+
+    public void setValues(int[][] gameBorder) {
+        String[][] stringArray = new String[gameBorder.length][];
+        for (int i = 0; i < gameBorder.length; i++) {
+            stringArray[i] = new String[gameBorder[i].length];
+            for (int j = 0; j < gameBorder[i].length; j++) {
+                if (gameBorder[i][j] == 0) {
+                    stringArray[i][j] = "";
+                    continue;
+                }
+                stringArray[i][j] = Integer.toString(gameBorder[i][j]);
+            }
+        }
+
+        this.values = stringArray;
     }
 
     /**

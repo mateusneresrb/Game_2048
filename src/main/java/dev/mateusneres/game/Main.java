@@ -1,6 +1,7 @@
 package dev.mateusneres.game;
 
 import dev.mateusneres.game.models.Game;
+import dev.mateusneres.game.models.Game2048;
 import dev.mateusneres.game.utils.Util;
 
 import java.io.IOException;
@@ -21,7 +22,7 @@ public class Main {
 
         Scanner teclado = new Scanner(System.in);
         int entrada;
-        Game jogo = null; /// Aqui deve ser instanciado o seu jogo. substitua essa linha pelo seu jogo
+        Game jogo = new Game2048();
         ///Ex. Game jogo = new MeuJogo();
 
         while(true){
@@ -33,6 +34,7 @@ public class Main {
                 System.out.println("3- Sair");
                 entrada = teclado.nextInt();
 
+                /* DPS DA ESCOLHA DELE Q EU EXECUTO O JOGO */
                 switch(entrada){
                     case 1:
                         jogo.criaNovo();

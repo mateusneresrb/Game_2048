@@ -1,9 +1,11 @@
 package dev.mateusneres.game.models;
 
 import lombok.AllArgsConstructor;
+import lombok.Data;
 
 @AllArgsConstructor
-public class User {
+@Data
+public class UserData {
 
     private String username;
     private GameBoard gameBoard;

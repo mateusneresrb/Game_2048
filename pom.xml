@@ -26,7 +26,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>dev.mateusneres.2048.Main</mainClass>
+                            <mainClass>dev.mateusneres.game.Main</mainClass>
                         </manifest>
                     </archive>
                     <descriptorRefs>

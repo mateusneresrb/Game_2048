@@ -267,9 +267,9 @@ public class TableBuilder {
             builder.append(borders.verticalOutline);
 
         for (int i = 0; i < row.length; i++) {
-            if(autoColor) {
+            if (autoColor) {
                 builder.append(setColor(row[i]));
-            }else {
+            } else {
                 builder.append(row[i]);
             }
             if (i == 0)
@@ -337,7 +337,7 @@ public class TableBuilder {
             case 256:
                 return ConsoleColors.GREEN_BACKGROUND + text + ConsoleColors.RESET;
             case 128:
-                return ConsoleColors.BLUE_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+                return ConsoleColors.YELLOW_BACKGROUND + text + ConsoleColors.RESET;
             case 64:
                 return ConsoleColors.RED_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
             case 32:
@@ -347,9 +347,9 @@ public class TableBuilder {
             case 8:
                 return ConsoleColors.CYAN_BACKGROUND + text + ConsoleColors.RESET;
             case 4:
-                return ConsoleColors.YELLOW_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
+                return ConsoleColors.BLUE_BACKGROUND + text + ConsoleColors.RESET;
             default:
-                return ConsoleColors.YELLOW_BACKGROUND + text + ConsoleColors.RESET;
+                return ConsoleColors.BLUE_BACKGROUND_BRIGHT + text + ConsoleColors.RESET;
         }
     }
 

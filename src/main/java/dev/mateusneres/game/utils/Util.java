@@ -124,4 +124,27 @@ public class Util {
         }
         return result;
     }
+
+    public static int randomValue() {
+        return Math.random() < 0.9 ? 2 : 4;
+    }
+
+    public static int getNextColumnAvailable(int[][] gameBoard, int column, int row) {
+        for (int c = (column -1); c >= 0; c--) {
+            if (gameBoard[row][c] == 0) continue;
+
+            return c;
+        }
+        return -1;
+    }
+
+    public static int getNextRowAvailable(int[][] gameBoard, int column, int row) {
+        for (int r = (row -1); r < gameBoard.length; r++) {
+            if (gameBoard[r][column] == 0) continue;
+
+            return r;
+        }
+        return -1;
+    }
+
 }

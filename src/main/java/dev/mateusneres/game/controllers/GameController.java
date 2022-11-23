@@ -11,21 +11,23 @@ import lc.kra.system.keyboard.GlobalKeyboardHook;
 import lc.kra.system.keyboard.event.GlobalKeyAdapter;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 
+import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 public class GameController {
 
     static boolean run = true;
-    private static List<UserData> usersDataList = new ArrayList<>();
+    private static Set<UserData> usersDataList = new HashSet<>();
     private static UserData userData;
 
-    private static void loadAllData() {
+    private static void loadAllGameData() {
         if (!FileUtil.existsDataFile() || FileUtil.isEmpty()) return;
 
-        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+        Gson gson = new Gson();
 
         Type typeOfUsersSaved = new TypeToken<List<UserData>>() {
         }.getType();
@@ -35,6 +37,18 @@ public class GameController {
             usersDataList = gson.fromJson(usersJson, typeOfUsersSaved);
         } catch (Exception e) {
             Logger.error("An error occurred while trying to load data from the save file;");
+        }
+    }
+
+    private static void saveGameData() {
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
+
+        usersDataList.add(userData);
+
+        try {
+            gson.toJson(usersDataList, new FileWriter(FileUtil.FILE_PATH));
+        } catch (IOException e) {
+            Logger.error("An error occurred while trying to save the users' data.");
         }
     }
 
@@ -52,7 +66,7 @@ public class GameController {
     }
 
     public static boolean containsUserData(String name) {
-        if (usersDataList == null) loadAllData();
+        if (usersDataList == null) loadAllGameData();
 
         return usersDataList.stream().anyMatch(userData -> userData.getUsername().equalsIgnoreCase(name));
     }
@@ -62,9 +76,42 @@ public class GameController {
         userData.setBestScore(userData.getGameBoard().getScore());
     }
 
+    private static boolean isUserCompleted() {
+        boolean gameCompleted = false;
+        GameBoard gameBoard = userData.getGameBoard();
+
+        for (int r = 0; r < gameBoard.getBoard().length; r++) {
+            for (int c = 0; c < gameBoard.getBoard().length; c++) {
+                if (gameBoard.getBoard()[r][c] == 2048) {
+                    gameCompleted = true;
+                    break;
+                }
+            }
+        }
+
+        return gameCompleted;
+    }
+
+    private static boolean isUserGameOver() {
+        boolean gameOver = true;
+        GameBoard gameBoard = userData.getGameBoard();
+
+        for (int r = 0; r < gameBoard.getBoard().length; r++) {
+            for (int c = 0; c < gameBoard.getBoard().length; c++) {
+                if (gameBoard.getBoard()[r][c] == 0) {
+                    gameOver = false;
+                    break;
+                }
+            }
+        }
+
+        return gameOver;
+    }
+
     private static void updateBoardView(UserData userData) {
         updateUserBestScore();
-        
+        saveGameData();
+
         TableBuilder tableBuilder = new TableBuilder();
 
         tableBuilder.setBorders(TableBuilder.Borders.FRAME).frame(true);
@@ -78,11 +125,32 @@ public class GameController {
             throw new RuntimeException(e);
         }
 
+
         Logger.info("  " + ConsoleColors.WHITE_BACKGROUND_BRIGHT + ConsoleColors.RED_BOLD_BRIGHT + "\t  2048 GAME  \t" + ConsoleColors.RESET + "\n");
         Logger.info("User: " + userData.getUsername() + " | Score: " + userData.getGameBoard().getScore() + " | Best: " + userData.getBestScore());
         Logger.info(tableBuilder.build());
+
+        if (isUserGameOver()) {
+            Logger.info("Você perdeu! GAME OVER!!!");
+            Logger.info("Sua pontuação desta partida foi de: " + userData.getGameBoard().getScore());
+
+            userData.resetGame();
+            saveGameData();
+
+            System.exit(1);
+            return;
+        }
+
         Logger.info("TIP: Use arrow keys to move the tiles.");
+
+        if (isUserCompleted()) {
+            userData.getGameBoard().setCompleted(true);
+            Logger.info("Você alcançou a peça 2048 e atingiu o objetivo do jogo!");
+            Logger.info("O jogo ainda permanecerá aberto para atingir uma maior pontuação!");
+        }
+
     }
+
 
     private static void hookKeyboards() {
         // Might throw a UnsatisfiedLinkError if the native library fails to load or a RuntimeException if hooking fails
@@ -95,40 +163,40 @@ public class GameController {
 
                 /* ESC */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_ESCAPE) {
+                    saveGameData();
                     keyboardHook.shutdownHook();
-                    //SAVE GAME HERE;
+                    Logger.info("Você finalizou o jogo, volte sempre!");
                     return;
                 }
 
-                /* SETA (CIMA) */
+                /* ARROW (UP) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_UP) {
                     userData.getGameBoard().movementBoard(MoveDirection.UP);
                     updateBoardView(userData);
                     return;
                 }
 
-                /* SETA (ESQUERDA) */
+                /* ARROW (LEFT) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_LEFT) {
                     userData.getGameBoard().movementBoard(MoveDirection.LEFT);
                     updateBoardView(userData);
                     return;
                 }
 
-                /* SETA (DIREITA) */
+                /* ARROW (RIGHT) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_RIGHT) {
                     userData.getGameBoard().movementBoard(MoveDirection.RIGHT);
                     updateBoardView(userData);
                     return;
                 }
 
-                /* SETA (BAIXO) */
+                /* ARROW (DOWN) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_DOWN) {
                     userData.getGameBoard().movementBoard(MoveDirection.DOWN);
                     updateBoardView(userData);
                 }
 
             }
-
         });
     }
 

@@ -1,59 +1,70 @@
 package dev.mateusneres.game.controllers;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.reflect.TypeToken;
 import dev.mateusneres.game.enums.MoveDirection;
 import dev.mateusneres.game.models.GameBoard;
-import dev.mateusneres.game.models.Score;
 import dev.mateusneres.game.models.UserData;
-import dev.mateusneres.game.utils.ConsoleColors;
-import dev.mateusneres.game.utils.FileUtil;
-import dev.mateusneres.game.utils.TableBuilder;
-import dev.mateusneres.game.utils.Util;
+import dev.mateusneres.game.utils.*;
 import lc.kra.system.keyboard.GlobalKeyboardHook;
 import lc.kra.system.keyboard.event.GlobalKeyAdapter;
 import lc.kra.system.keyboard.event.GlobalKeyEvent;
 
-import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ThreadLocalRandom;
 
 public class GameController {
 
     static boolean run = true;
-    List<UserData> userDataSaved = new ArrayList<>();
+    private static List<UserData> usersDataList = new ArrayList<>();
     private static UserData userData;
 
-    public void loadAllData() {
+    private static void loadAllData() {
         if (!FileUtil.existsDataFile() || FileUtil.isEmpty()) return;
 
-        File dataFile = FileUtil.getDataFile();
+        Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
-        //FINISH LOAD FILE;
+        Type typeOfUsersSaved = new TypeToken<List<UserData>>() {
+        }.getType();
+
+        try {
+            String usersJson = FileUtil.readFileAsString();
+            usersDataList = gson.fromJson(usersJson, typeOfUsersSaved);
+        } catch (Exception e) {
+            Logger.error("An error occurred while trying to load data from the save file;");
+        }
     }
 
-
     public static void start() {
-        GameBoard gameBoard = new GameBoard(new int[4][4], new Score(0, 0));
-        userData = new UserData("MateusN", gameBoard, 0);
-
         updateBoardView(userData);
         hookKeyboards();
     }
 
-    public static void newGame() {
+    public static void createOrLoadGame(String username) {
+        GameBoard gameBoard = new GameBoard(new int[4][4], 0);
+        UserData user = new UserData(username, gameBoard, 0);
 
-
+        userData = usersDataList.stream().filter(userD -> userD.getUsername().equalsIgnoreCase(username)).findFirst().orElse(user);
+        userData.resetGame();
     }
 
-    public static void loadGame() {
+    public static boolean containsUserData(String name) {
+        if (usersDataList == null) loadAllData();
 
-
+        return usersDataList.stream().anyMatch(userData -> userData.getUsername().equalsIgnoreCase(name));
     }
 
+    private static void updateUserBestScore() {
+        if (userData.getBestScore() > userData.getGameBoard().getScore()) return;
+        userData.setBestScore(userData.getGameBoard().getScore());
+    }
 
     private static void updateBoardView(UserData userData) {
+        updateUserBestScore();
+        
         TableBuilder tableBuilder = new TableBuilder();
 
         tableBuilder.setBorders(TableBuilder.Borders.FRAME).frame(true);
@@ -63,16 +74,14 @@ public class GameController {
 
         try {
             Util.clearScreen();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        } catch (InterruptedException e) {
+        } catch (IOException | InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        System.out.println("  " + ConsoleColors.WHITE_BACKGROUND_BRIGHT + ConsoleColors.RED_BOLD_BRIGHT + "\t  2048 GAME  \t" + ConsoleColors.RESET + "\n");
-        System.out.println("User: " + userData.getUsername() + " | Score: " + userData.getGameBoard().getScore().getGameScore() + " | Best: " + userData.getBestScore());
-        System.out.println(tableBuilder.build());
-        System.out.println("TIP: Use arrow keys to move the tiles.");
+        Logger.info("  " + ConsoleColors.WHITE_BACKGROUND_BRIGHT + ConsoleColors.RED_BOLD_BRIGHT + "\t  2048 GAME  \t" + ConsoleColors.RESET + "\n");
+        Logger.info("User: " + userData.getUsername() + " | Score: " + userData.getGameBoard().getScore() + " | Best: " + userData.getBestScore());
+        Logger.info(tableBuilder.build());
+        Logger.info("TIP: Use arrow keys to move the tiles.");
     }
 
     private static void hookKeyboards() {
@@ -87,14 +96,13 @@ public class GameController {
                 /* ESC */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_ESCAPE) {
                     keyboardHook.shutdownHook();
-                    System.out.println("PROGRAMA FINALIZADO!");
+                    //SAVE GAME HERE;
                     return;
                 }
 
                 /* SETA (CIMA) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_UP) {
                     userData.getGameBoard().movementBoard(MoveDirection.UP);
-                    userData.getGameBoard().generateRandomNumber();
                     updateBoardView(userData);
                     return;
                 }
@@ -102,7 +110,6 @@ public class GameController {
                 /* SETA (ESQUERDA) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_LEFT) {
                     userData.getGameBoard().movementBoard(MoveDirection.LEFT);
-                    userData.getGameBoard().generateRandomNumber();
                     updateBoardView(userData);
                     return;
                 }
@@ -110,7 +117,6 @@ public class GameController {
                 /* SETA (DIREITA) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_RIGHT) {
                     userData.getGameBoard().movementBoard(MoveDirection.RIGHT);
-                    userData.getGameBoard().generateRandomNumber();
                     updateBoardView(userData);
                     return;
                 }
@@ -118,9 +124,7 @@ public class GameController {
                 /* SETA (BAIXO) */
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_DOWN) {
                     userData.getGameBoard().movementBoard(MoveDirection.DOWN);
-                    userData.getGameBoard().generateRandomNumber();
                     updateBoardView(userData);
-                    return;
                 }
 
             }

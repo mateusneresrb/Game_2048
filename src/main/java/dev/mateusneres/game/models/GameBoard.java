@@ -11,7 +11,7 @@ public class GameBoard {
 
     private int[][] board;
     private int score;
-    private boolean completed; //CHECK IS 2048
+    private boolean completed;
 
     public GameBoard(int[][] board, int gameScore) {
         this.board = board;

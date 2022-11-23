@@ -130,7 +130,7 @@ public class Util {
     }
 
     public static int getNextColumnAvailable(int[][] gameBoard, int column, int row) {
-        for (int c = (column -1); c >= 0; c--) {
+        for (int c = (column - 1); c >= 0; c--) {
             if (gameBoard[row][c] == 0) continue;
 
             return c;
@@ -139,7 +139,7 @@ public class Util {
     }
 
     public static int getNextRowAvailable(int[][] gameBoard, int column, int row) {
-        for (int r = (row -1); r < gameBoard.length; r++) {
+        for (int r = (row - 1); r < gameBoard.length; r++) {
             if (gameBoard[r][column] == 0) continue;
 
             return r;

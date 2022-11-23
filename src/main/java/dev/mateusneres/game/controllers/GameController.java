@@ -14,14 +14,12 @@ import lc.kra.system.keyboard.event.GlobalKeyEvent;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
-import java.util.HashSet;
+import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 
 public class GameController {
 
-    static boolean run = true;
-    private static Set<UserData> usersDataList = new HashSet<>();
+    private static List<UserData> usersDataList = new ArrayList<>();
     private static UserData userData;
 
     private static void loadAllGameData() {
@@ -43,10 +41,18 @@ public class GameController {
     private static void saveGameData() {
         Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
+        if (usersDataList.stream().anyMatch(user -> user.getUsername().equalsIgnoreCase(userData.getUsername()))) {
+            usersDataList.remove(usersDataList.stream().filter(user -> user.getUsername().equalsIgnoreCase(userData.getUsername())).findFirst().orElse(null));
+        }
+
         usersDataList.add(userData);
 
         try {
-            gson.toJson(usersDataList, new FileWriter(FileUtil.FILE_PATH));
+            try (FileWriter writer = new FileWriter(FileUtil.getDataFile())) {
+                gson.toJson(usersDataList, writer);
+                writer.flush();
+            }
+
         } catch (IOException e) {
             Logger.error("An error occurred while trying to save the users' data.");
         }
@@ -62,11 +68,14 @@ public class GameController {
         UserData user = new UserData(username, gameBoard, 0);
 
         userData = usersDataList.stream().filter(userD -> userD.getUsername().equalsIgnoreCase(username)).findFirst().orElse(user);
+    }
+
+    public static void resetUserData() {
         userData.resetGame();
     }
 
     public static boolean containsUserData(String name) {
-        if (usersDataList == null) loadAllGameData();
+        if (usersDataList.isEmpty()) loadAllGameData();
 
         return usersDataList.stream().anyMatch(userData -> userData.getUsername().equalsIgnoreCase(name));
     }
@@ -132,7 +141,7 @@ public class GameController {
 
         if (isUserGameOver()) {
             Logger.info("Você perdeu! GAME OVER!!!");
-            Logger.info("Sua pontuação desta partida foi de: " + userData.getGameBoard().getScore());
+            Logger.info("Sua pontuação desta partida foi de: " + userData.getGameBoard().getScore() + " pontos");
 
             userData.resetGame();
             saveGameData();
@@ -148,7 +157,6 @@ public class GameController {
             Logger.info("Você alcançou a peça 2048 e atingiu o objetivo do jogo!");
             Logger.info("O jogo ainda permanecerá aberto para atingir uma maior pontuação!");
         }
-
     }
 
 

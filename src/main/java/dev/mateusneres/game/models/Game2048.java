@@ -1,7 +1,6 @@
 package dev.mateusneres.game.models;
 
 import dev.mateusneres.game.controllers.GameController;
-import dev.mateusneres.game.utils.FileUtil;
 import dev.mateusneres.game.utils.Logger;
 
 import java.util.Scanner;
@@ -31,6 +30,7 @@ public class Game2048 extends Game {
                 if (choose == 2) {
                     Logger.info("Um novo jogo será iniciado para o usuário: " + username + ".");
                     GameController.createOrLoadGame(username);
+                    GameController.resetUserData();
                     return;
                 }
 

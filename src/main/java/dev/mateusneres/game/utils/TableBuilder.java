@@ -1,6 +1,5 @@
 package dev.mateusneres.game.utils;
 
-import javax.swing.*;
 import java.util.Arrays;
 import java.util.Objects;
 

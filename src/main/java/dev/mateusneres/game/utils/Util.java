@@ -129,22 +129,15 @@ public class Util {
         return Math.random() < 0.9 ? 2 : 4;
     }
 
-    public static int getNextColumnAvailable(int[][] gameBoard, int column, int row) {
-        for (int c = (column - 1); c >= 0; c--) {
-            if (gameBoard[row][c] == 0) continue;
-
-            return c;
+    public static boolean containsZeroValue(int[][] matriz) {
+        for (int r = 0; r < matriz.length; r++) {
+            for (int c = 0; c < matriz.length; c++) {
+                if (matriz[r][c] == 0) {
+                    return true;
+                }
+            }
         }
-        return -1;
-    }
-
-    public static int getNextRowAvailable(int[][] gameBoard, int column, int row) {
-        for (int r = (row - 1); r < gameBoard.length; r++) {
-            if (gameBoard[r][column] == 0) continue;
-
-            return r;
-        }
-        return -1;
+        return false;
     }
 
 }

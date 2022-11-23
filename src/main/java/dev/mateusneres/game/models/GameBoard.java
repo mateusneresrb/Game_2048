@@ -4,6 +4,7 @@ import dev.mateusneres.game.enums.MoveDirection;
 import dev.mateusneres.game.utils.Util;
 import lombok.Data;
 
+import java.util.Arrays;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Data
@@ -22,6 +23,8 @@ public class GameBoard {
     }
 
     public void generateRandomNumber() {
+        if (!Util.containsZeroValue(board)) return;
+
         while (true) {
             int r = ThreadLocalRandom.current().nextInt(board.length);
             int c = ThreadLocalRandom.current().nextInt(board.length);
@@ -38,6 +41,24 @@ public class GameBoard {
         moveValues(moveDirection);
 
         generateRandomNumber();
+    }
+
+    public boolean isGameOver() {
+        int[][] savedBoard = Arrays.stream(board).map(int[]::clone).toArray(int[][]::new);
+
+        /* Test merge and move*/
+        movementBoard(MoveDirection.UP);
+        movementBoard(MoveDirection.DOWN);
+        movementBoard(MoveDirection.LEFT);
+        movementBoard(MoveDirection.RIGHT);
+
+        if (Arrays.deepEquals(board, savedBoard)) {
+            board = savedBoard;
+            return true;
+        }
+
+        board = savedBoard;
+        return false;
     }
 
     /* VERIFICAÇÃO DE TRÁS PRA FRENTE NESSA BCT */
@@ -110,7 +131,6 @@ public class GameBoard {
                         /* MERGE */
                         if (nextRowAvailable != -1 && board[nextRowAvailable][c] == value) {
                             board[r][c] += value;
-
                             board[nextRowAvailable][c] = 0;
 
                             score += board[r][c];
@@ -144,7 +164,6 @@ public class GameBoard {
                 }
                 break;
         }
-
     }
 
     private void moveValues(MoveDirection moveDirection) {
@@ -184,8 +203,8 @@ public class GameBoard {
 
                         if (nextColumnEmpty != -1 && board[r][nextColumnEmpty] == 0) {
                             board[r][nextColumnEmpty] = value;
-                            /* RESET OLD VALUE */
                             board[r][c] = 0;
+
                         }
                     }
                 }

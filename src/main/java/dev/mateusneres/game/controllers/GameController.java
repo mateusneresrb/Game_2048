@@ -34,7 +34,10 @@ public class GameController {
             String usersJson = FileUtil.readFileAsString();
             usersDataList = gson.fromJson(usersJson, typeOfUsersSaved);
         } catch (Exception e) {
-            Logger.error("An error occurred while trying to load data from the save file;");
+            Logger.error("Não foi possível carregar o arquivo!");
+            Logger.error("Possíveis causas: Arquivo corrompido ou inexistente!");
+
+            System.exit(1);
         }
     }
 
@@ -54,7 +57,10 @@ public class GameController {
             }
 
         } catch (IOException e) {
-            Logger.error("An error occurred while trying to save the users' data.");
+            Logger.error("Não foi possível salvar os dados no arquivo!");
+            Logger.error("Possíveis causas: Arquivo não pode ser acessado/Não pode ser criado");
+
+            System.exit(1);
         }
     }
 
@@ -101,22 +107,6 @@ public class GameController {
         return gameCompleted;
     }
 
-    private static boolean isUserGameOver() {
-        boolean gameOver = true;
-        GameBoard gameBoard = userData.getGameBoard();
-
-        for (int r = 0; r < gameBoard.getBoard().length; r++) {
-            for (int c = 0; c < gameBoard.getBoard().length; c++) {
-                if (gameBoard.getBoard()[r][c] == 0) {
-                    gameOver = false;
-                    break;
-                }
-            }
-        }
-
-        return gameOver;
-    }
-
     private static void updateBoardView(UserData userData) {
         updateUserBestScore();
         saveGameData();
@@ -134,21 +124,9 @@ public class GameController {
             throw new RuntimeException(e);
         }
 
-
         Logger.info("  " + ConsoleColors.WHITE_BACKGROUND_BRIGHT + ConsoleColors.RED_BOLD_BRIGHT + "\t  2048 GAME  \t" + ConsoleColors.RESET + "\n");
         Logger.info("User: " + userData.getUsername() + " | Score: " + userData.getGameBoard().getScore() + " | Best: " + userData.getBestScore());
         Logger.info(tableBuilder.build());
-
-        if (isUserGameOver()) {
-            Logger.info("Você perdeu! GAME OVER!!!");
-            Logger.info("Sua pontuação desta partida foi de: " + userData.getGameBoard().getScore() + " pontos");
-
-            userData.resetGame();
-            saveGameData();
-
-            System.exit(1);
-            return;
-        }
 
         Logger.info("TIP: Use arrow keys to move the tiles.");
 
@@ -159,6 +137,17 @@ public class GameController {
         }
     }
 
+    private static void finishGameOver() {
+        if (userData.getGameBoard().isGameOver()) {
+            Logger.info("Você perdeu! GAME OVER!!!");
+            Logger.info("Sua pontuação desta partida foi de: " + userData.getGameBoard().getScore() + " pontos");
+
+            userData.resetGame();
+            saveGameData();
+
+            System.exit(1);
+        }
+    }
 
     private static void hookKeyboards() {
         // Might throw a UnsatisfiedLinkError if the native library fails to load or a RuntimeException if hooking fails
@@ -181,6 +170,7 @@ public class GameController {
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_UP) {
                     userData.getGameBoard().movementBoard(MoveDirection.UP);
                     updateBoardView(userData);
+                    finishGameOver();
                     return;
                 }
 
@@ -188,6 +178,7 @@ public class GameController {
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_LEFT) {
                     userData.getGameBoard().movementBoard(MoveDirection.LEFT);
                     updateBoardView(userData);
+                    finishGameOver();
                     return;
                 }
 
@@ -195,6 +186,7 @@ public class GameController {
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_RIGHT) {
                     userData.getGameBoard().movementBoard(MoveDirection.RIGHT);
                     updateBoardView(userData);
+                    finishGameOver();
                     return;
                 }
 
@@ -202,11 +194,10 @@ public class GameController {
                 if (event.getVirtualKeyCode() == GlobalKeyEvent.VK_DOWN) {
                     userData.getGameBoard().movementBoard(MoveDirection.DOWN);
                     updateBoardView(userData);
+                    finishGameOver();
                 }
 
             }
         });
     }
-
 }
-

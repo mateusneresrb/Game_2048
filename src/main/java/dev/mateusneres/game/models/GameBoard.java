@@ -61,7 +61,6 @@ public class GameBoard {
         return false;
     }
 
-    /* VERIFICAÇÃO DE TRÁS PRA FRENTE NESSA BCT */
     private void mergeValues(MoveDirection direction) {
         switch (direction) {
             case RIGHT:
